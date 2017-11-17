@@ -8,6 +8,7 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
+  LayoutAnimation,
   Easing
 } from 'react-native';
 import createReactClass from 'create-react-class';
@@ -33,6 +34,15 @@ function Rect(x, y, width, height) {
   this.y = y;
   this.width = width;
   this.height = height;
+}
+
+function isDifferentRect(rect1, rect2) {
+  return (
+    rect1.x != rect2.x ||
+    rect1.y != rect2.y ||
+    rect1.width != rect2.width ||
+    rect1.height != rect2.height
+  );
 }
 
 var Popover = createReactClass({
@@ -234,6 +244,26 @@ var Popover = createReactClass({
       } else {
         this._startAnimation({show: false});
       }
+    }
+  },
+  componentDidUpdate(prevProps, prevState) {
+    var {
+      isVisible,
+    } = this.props;
+
+    if (isVisible && prevProps.isVisible &&
+      (isDifferentRect(prevProps.fromRect, this.props.fromRect) || isDifferentRect(prevProps.displayArea, this.props.displayArea))) {
+      var geom = this.computeGeometry({contentSize: this.props.displayArea});
+
+      const CustomLayoutLinear = {
+        duration: 150,
+        update: {
+          type: LayoutAnimation.Types.linear,
+        }
+      };
+      LayoutAnimation.configureNext(CustomLayoutLinear);
+
+      this.setState({...geom});
     }
   },
   _startAnimation({show}) {
